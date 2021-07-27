@@ -1,0 +1,11 @@
+name = "tg-comment-bot"
+type = "javascript"
+zone_id = ""
+account_id = ""
+route = ""
+workers_dev = true
+
+[build]
+command = "yarn && yarn run build"
+[build.upload]
+format = "service-worker"
