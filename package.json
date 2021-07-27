@@ -36,7 +36,5 @@
     "webpack": "^5.38.1",
     "webpack-cli": "^4.7.0"
   },
-  "dependencies": {
-    "node-telegram-bot-api": "^0.54.0"
-  }
+  "dependencies": {}
 }
