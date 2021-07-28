@@ -82,7 +82,7 @@ async function handleRequest(request: Request) {
     }
   }
 
-  return new Response('forbidden', { status: 403 })
+  return new Response('ok', { status: 200 })
 }
 
 addEventListener('fetch', (event) => {
