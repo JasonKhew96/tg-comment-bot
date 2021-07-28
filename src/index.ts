@@ -37,27 +37,52 @@ function deleteMessage(chatID: number, messageID: number): Promise<Response> {
   return fetch(url)
 }
 
+// function sendMessage(chatID: number, text: string) {
+//   const url = `${TG_REQ_URL}/sendMessage?chat_id=${chatID}&text=\`${text}\`&parse_mode=MarkdownV2`
+//   return fetch(url)
+// }
+
 async function handleRequest(request: Request) {
   if (request.method == 'POST') {
     const data = await request.json()
+    let resp: Response | undefined
+    // if (
+    //   data.message !== undefined &&
+    //   data.message.chat.id == -1001185712879 &&
+    //   data.message.text == '/test'
+    // ) {
+    //   resp = await sendMessage(data.message.chat.id, 'TEST')
+    // }
     if (
       data.message !== undefined &&
       (data.message.new_chat_members !== undefined ||
         data.message.left_chat_member !== undefined)
     ) {
-      deleteMessage(data.message.chat.id, data.message.message_id)
+      resp = await deleteMessage(data.message.chat.id, data.message.message_id)
     } else if (data.chat_member !== undefined) {
       // const oldChatMemberStatus = data.chat_member.old_chat_member.status
       const newChatMemberStatus = data.chat_member.new_chat_member.status
-      if (/* oldChatMemberStatus === 'left' && */ newChatMemberStatus === 'member') {
-        banChatMember(
+      if (
+        /* oldChatMemberStatus === 'left' && */ newChatMemberStatus === 'member'
+      ) {
+        resp = await banChatMember(
           data.chat_member.chat.id,
           data.chat_member.new_chat_member.user.id,
         )
       }
     }
+
+    if (resp != undefined) {
+      const respData = await resp.json()
+      if (respData.ok) {
+        return new Response('ok', { status: 200 })
+      } else {
+        return new Response('fail', { status: 500 })
+      }
+    }
   }
-  return new Response('ok', { status: 200 })
+
+  return new Response('forbidden', { status: 403 })
 }
 
 addEventListener('fetch', (event) => {
@@ -71,6 +96,8 @@ addEventListener('fetch', (event) => {
 
   const { url, method } = event.request
   const { pathname, host, protocol } = new URL(url)
+
+  console.log(`[${realIP}][${connectingIP}] ${pathname}`)
 
   switch (pathname) {
     case GET_WEBHOOK_INFO_SECRET:
@@ -95,7 +122,6 @@ addEventListener('fetch', (event) => {
   event.respondWith(
     new Response('FORBIDDEN', {
       status: 403,
-      statusText: 'FORBIDDEN',
     }),
   )
 })
